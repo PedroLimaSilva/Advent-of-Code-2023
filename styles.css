@@ -1,4 +1,9 @@
-h1 {
-    text-decoration: underline;
-  }
-  
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  padding: 1em;
+}
