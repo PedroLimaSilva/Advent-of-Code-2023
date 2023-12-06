@@ -1,23 +1,16 @@
-function checkGame(gameSets, constraints) {
-  console.log(gameSets);
+function getGamePower(gameSets) {
   const maxValues = { r: 0, g: 0, b: 0 };
   for (set of gameSets) {
-    console.log("set");
     for (ball of set) {
       const color = ball.charAt(ball.length - 1);
       const amount = parseInt(ball.substring(0, ball.length - 1));
       maxValues[color] = Math.max(maxValues[color], amount);
-      console.log(color, amount, ball, maxValues[color]);
     }
   }
-  return (
-    maxValues.r <= constraints.r &&
-    maxValues.g <= constraints.g &&
-    maxValues.b <= constraints.b
-  );
+  return maxValues.r * maxValues.b * maxValues.g;
 }
 
-function processInput(text, constraints) {
+function processInput(text) {
   const goodGamesAcc = 0;
 
   text = text
@@ -31,13 +24,10 @@ function processInput(text, constraints) {
     const gameNumber = parseInt(sets[0].replace("Game ", ""));
     sets.shift();
 
-    const gameCheck = checkGame(
-      sets.map((set) => set.split(", ")),
-      constraints
-    );
-    console.log(gameNumber, gameCheck);
+    const gamePower = getGamePower(sets.map((set) => set.split(", ")));
+    console.log(gameNumber, gamePower);
 
-    return gameCheck ? gameNumber : 0;
+    return gamePower;
   });
 
   return values.reduce((acc, curr) => acc + curr, 0);
@@ -51,10 +41,7 @@ function main() {
     .then((text) => {
       console.log(text);
       document.getElementById("input").textContent = text;
-      document.getElementById("result").innerHTML = processInput(
-        text,
-        CONSTRAINTS
-      );
+      document.getElementById("result").innerHTML = processInput(text);
     });
 }
 
