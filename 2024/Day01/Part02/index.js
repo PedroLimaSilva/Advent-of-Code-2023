@@ -13,20 +13,26 @@ function getSimilarity() {
   const left = [];
   const right = [];
   const lines = text.split('\n');
-  for (let l = 0; l < lines.length; l++) {
-    const ids = lines[l].split('   ');
 
-    left.push(ids[0]);
-    right.push(ids[1]);
+  // Register the number of times a number appears on right list
+  const countMap = {};
+  for (let line = 0; line < lines.length; line++) {
+    const [l, r] = lines[line].split('   ');
+
+    if (countMap[r] !== undefined) {
+      countMap[r] = countMap[r] + 1;
+    } else {
+      countMap[r] = 1;
+    }
+
+    left.push(l);
+    right.push(r);
   }
-  left.sort(sortAsc);
-  right.sort(sortAsc);
 
   let sum = 0;
   for (let l = 0; l < lines.length; l++) {
-    sum += Math.abs(left[l] - right[l]);
+    sum += left[l] * (countMap[left[l]] || 0);
     result.textContent = sum;
   }
-  console.log(left, right);
   return sum;
 }
