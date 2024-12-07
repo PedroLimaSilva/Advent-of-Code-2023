@@ -8,10 +8,9 @@ const ruleMap = {};
 
 function addRule(rule) {
   if (ruleMap[rule[0]] === undefined) {
-    ruleMap[rule[0]] = [+rule[1]];
-  } else {
-    ruleMap[rule[0]].push(+rule[1]);
+    ruleMap[rule[0]] = [];
   }
+  ruleMap[rule[0]][rule[1]] = true;
 }
 
 function getAnswer() {
@@ -30,30 +29,14 @@ function getAnswer() {
       continue;
     }
     const update = lines[i].split(',');
-    console.log(update);
     if (update.length > 1) {
       let breaksRule = false;
-      console.log('update', update);
       for (let u = 0; u < update.length; u++) {
         const step = +update[u];
-        const stepConstraints = ruleMap[step];
-        console.log('stepConstraints', step, stepConstraints);
-        for (let c = 0; c < stepConstraints?.length; c++) {
-          const constraint = stepConstraints[c];
-          console.log('constraint', constraint, c, u);
-          for (let b = u - 1; b >= 0; b--) {
-            console.log('backtraking', constraint, +update[b]);
-            if (constraint === +update[b]) {
-              console.log('found a rule break', step, update, stepConstraints);
-              breaksRule = true;
-              break;
-            }
-          }
-          if (breaksRule) {
-            break;
-          }
-        }
-        if (breaksRule) {
+        const prev = +update[u-1];
+        if(ruleMap[step] && prev && ruleMap[step][prev]){
+          console.log('found a rule break', step, prev, ruleMap[step]);
+          breaksRule = true;
           break;
         }
       }
