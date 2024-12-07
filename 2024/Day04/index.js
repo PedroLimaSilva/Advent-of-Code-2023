@@ -1,29 +1,10 @@
-const input = document.getElementById("input");
-const submitButton = document.getElementById("submit");
-const result = document.getElementById("result");
+const input = document.getElementById('input');
+const submitButton = document.getElementById('submit');
+const result = document.getElementById('result');
 
-submitButton.addEventListener("click", getAnswer);
+submitButton.addEventListener('click', getAnswer);
 
-const target = "XMAS";
-
-function testCharacter(character, targetCharIndex) {
-  let targetChar = target.charAt(targetCharIndex);
-  let countIncrease = 0;
-  if (character === targetChar) {
-    targetCharIndex++;
-    if (targetCharIndex === target.length) {
-      countIncrease++;
-      targetCharIndex = 0;
-    }
-  } else {
-    targetCharIndex = 0;
-    targetChar = target.charAt(targetCharIndex);
-    if (character === targetChar) {
-      targetCharIndex++;
-    }
-  }
-  return { targetCharIndex, countIncrease };
-}
+const target = 'XMAS';
 
 const DIRECTIONS = {
   N: [-1, 0],
@@ -36,14 +17,58 @@ const DIRECTIONS = {
   SW: [1, -1],
 };
 
+function checkDirection(matrix, line, column, direction, targetCharIndex) {
+  const newPosition = {
+    l: line + DIRECTIONS[direction][0],
+    c: column + DIRECTIONS[direction][1],
+  };
+  if (
+    newPosition.c < 0 ||
+    newPosition.l < 0 ||
+    newPosition.l >= matrix.length ||
+    newPosition.c > matrix[newPosition.l].length
+  ) {
+    // Out of bounds check
+    return false;
+  }
+  const newChar = matrix[newPosition.l][newPosition.c];
+  if (newChar === target.charAt(targetCharIndex)) {
+    if (targetCharIndex === target.length - 1) {
+      console.log('FOUND ONE ending at ', newPosition, 'from', direction);
+      return true;
+    }
+    return checkDirection(
+      matrix,
+      newPosition.l,
+      newPosition.c,
+      direction,
+      targetCharIndex + 1
+    );
+  }
+}
+
 function getAnswer() {
-  result.textContent = "Calculating...";
+  result.textContent = 'Calculating...';
 
   const text = input.value;
-  const matrix = text.split("\n");
+  const matrix = text.split('\n');
   let count = 0;
 
-  console.log(matrix, matrix[2][4]);
+  for (let l = 0; l < matrix.length; l++) {
+    for (let c = 0; c < matrix[l].length; c++) {
+      const char = matrix[l][c];
+      if (char === target.charAt(0)) {
+        console.log(`found ${char} at [${l}, ${c}]`);
+        Object.keys(DIRECTIONS).forEach((direction) => {
+          if (checkDirection(matrix, l, c, direction, 1)) {
+            count++;
+          }
+        });
+      }
+    }
+  }
+
+  console.log(matrix);
 
   result.textContent = count;
   console.log(count);
