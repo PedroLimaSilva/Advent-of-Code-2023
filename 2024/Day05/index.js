@@ -30,17 +30,23 @@ function getAnswer() {
     }
     const update = lines[i].split(',');
     if (update.length > 1) {
+      console.groupEnd()
+      console.group(update);
       let breaksRule = false;
       for (let u = 0; u < update.length; u++) {
         const step = +update[u];
-        const prev = +update[u-1];
-        if(ruleMap[step] && prev && ruleMap[step][prev]){
+        const prev = +update[u - 1];
+        console.log(step, prev);
+        if (ruleMap[step] && prev && ruleMap[step][prev]) {
           console.log('found a rule break', step, prev, ruleMap[step]);
+          update[u] = prev + 0;
+          update[u - 1] = step + 0;
+          u = 0;
           breaksRule = true;
-          break;
+          // break;
         }
       }
-      if (!breaksRule) {
+      if (breaksRule) {
         const middle = +update[Math.floor(update.length / 2)];
         console.log('adding', update, middle);
         sum += middle;
