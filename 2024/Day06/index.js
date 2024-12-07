@@ -63,12 +63,11 @@ class Guard {
 
   isLooping() {
     // if we're vising the same place facing the same direction, we're in a loop
-    return this.steps > this.log.size();
+    return this.steps > this.log.size;
   }
 
   move(matrix) {
     let newPosition = this.getNextPosition();
-    console.log('moving to', newPosition);
     if (checkOutOfBounds(matrix, newPosition)) {
       console.log('got out of bounds');
       return { outOfBounds: true };
@@ -82,14 +81,14 @@ class Guard {
     this.c = newPosition.c;
     this.log.set(JSON.stringify({ l: this.l, c: this.c, d: this.d }));
 
-    visual.renderGuardAt(newPosition, this.d);
+    // visual.renderGuardAt(newPosition, this.d);
     this.steps++;
 
     if (matrix[this.l][this.c] !== 'X') {
-      matrix[this.l][this.c] = 'X';
-      visual.drawPathAt(newPosition);
+      // matrix[this.l][this.c] = 'X';
+      // visual.drawPathAt(newPosition);
     }
-    debugger;
+    // debugger;
     return { outOfBounds: false };
   }
 
@@ -173,7 +172,7 @@ class Visualizer {
 
 const visual = new Visualizer();
 
-function getAnswer() {
+function part1() {
   result.textContent = 'Calculating...';
 
   const text = input.value;
@@ -208,5 +207,51 @@ function getAnswer() {
   }
 
   result.textContent = countX;
+  return text;
+}
+
+function getAnswer() {
+  result.textContent = 'Calculating...';
+
+  const text = input.value;
+  const matrix = text.split('\n').map((row) => row.split(''));
+
+  // visual.renderMap(matrix);
+
+  const position = findPosition(matrix, isGuard);
+  // visual.renderGuardAt(position);
+  matrix[position.l][position.c] = 'X';
+  // visual.drawPathAt(position);
+
+  const guard = new Guard(position);
+
+  let obstacles = 0;
+  for (let l = 0; l < matrix.length; l++) {
+    for (let c = 0; c < matrix[l].length; c++) {
+      guard.reset();
+
+      const cell = matrix[l][c];
+      if (cell === '.') {
+        matrix[l][c] = '#';
+        // visual.renderMap(matrix);
+        while (true) {
+          const { outOfBounds } = guard.move(matrix);
+          if (outOfBounds) {
+            matrix[l][c] = '.';
+            break;
+          }
+
+          if (guard.isLooping()) {
+            matrix[l][c] = '.';
+            obstacles++;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  result.textContent = obstacles;
+  console.log(obstacles)
   return text;
 }
