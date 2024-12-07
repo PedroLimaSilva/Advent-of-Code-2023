@@ -25,130 +25,188 @@ function checkOutOfBounds(matrix, position) {
   }
 }
 
-function turnRight(direction) {
-  switch (direction) {
-    case '^':
-      return '>';
-    case '>':
-      return 'v';
-    case 'v':
-      return '<';
-    case '<':
-      return '^';
-    default:
-      throw Error('wft direction is this', direction);
-  }
-}
-
-function moveGuardInDirection(matrix, direction, line, column) {
-  const vector = DIRECTIONS[direction];
-  const newPosition = { l: line + vector[0], c: column + vector[1] };
-  console.log('moving to', newPosition);
-  if (checkOutOfBounds(matrix, newPosition)) {
-    console.log('got out of bounds');
-    return { outOfBounds: true };
-  }
-  if (matrix[newPosition.l][newPosition.c] === OBSTACLE) {
-    console.log('turning right');
-    newPosition.l = line;
-    newPosition.c = column;
-    direction = turnRight(direction);
-  }
-  console.log(matrix[newPosition.l][newPosition.c]);
-  let increment = 0;
-  if (matrix[newPosition.l][newPosition.c] !== 'X') {
-    increment = 1;
-    matrix[newPosition.l] =
-      matrix[newPosition.l].substring(0, newPosition.c) +
-      'X' +
-      matrix[newPosition.l].substring(newPosition.c + 1);
-  }
-  renderGuardAt(newPosition, direction);
-  return { direction, newPosition, increment };
-}
-
 function isGuard(char) {
   return char === '^' || char === 'v' || char === '>' || char === '<';
 }
 
-function renderMap(matrix) {
-  const mapDiv = document.getElementById('map');
-  mapDiv.innerHTML = '';
-
-  let guardPosition = {};
+function findPosition(matrix, condition) {
   for (let l = 0; l < matrix.length; l++) {
-    const row = document.createElement('div');
     for (let c = 0; c < matrix[l].length; c++) {
-      const cell = matrix[l][c];
-      const guard = isGuard(cell);
-      if (guard) {
-        guardPosition.c = c;
-        guardPosition.l = l;
+      const char = matrix[l][c];
+      if (condition(char)) {
+        console.log(`found guard at [${l}, ${c}]`);
+        return { l, c, d: char };
       }
-      const element = document.createElement('div');
-      element.className = 'cell';
-      element.innerHTML = guard ? '.' : cell;
-      row.appendChild(element);
     }
-    mapDiv.appendChild(row);
   }
-  renderGuardAt(guardPosition, '^');
 }
 
-function renderGuardAt(position, direction) {
-  const mapDiv = document.getElementById('map');
-  let guardElement = document.getElementById('guard');
-  if (!guardElement) {
-    guardElement = document.createElement('div');
-    guardElement.id = 'guard';
-    mapDiv.appendChild(guardElement);
+class Guard {
+  constructor(startingPosition) {
+    this.startingPosition = startingPosition;
+    this.l = startingPosition.l;
+    this.c = startingPosition.c;
+    this.d = startingPosition.d;
+
+    // store a record of all positions visited including direction
+    this.log = new Map();
+    this.steps = 0;
   }
-  guardElement.innerHTML = direction;
-  guardElement.style.left = `${position.c * 30}px`;
-  guardElement.style.top = `${position.l * 30}px`;
+
+  reset() {
+    this.steps = 0;
+    this.l = this.startingPosition.l;
+    this.c = this.startingPosition.c;
+    this.d = this.startingPosition.d;
+    this.log = new Map();
+  }
+
+  isLooping() {
+    // if we're vising the same place facing the same direction, we're in a loop
+    return this.steps > this.log.size();
+  }
+
+  move(matrix) {
+    let newPosition = this.getNextPosition();
+    console.log('moving to', newPosition);
+    if (checkOutOfBounds(matrix, newPosition)) {
+      console.log('got out of bounds');
+      return { outOfBounds: true };
+    }
+    if (matrix[newPosition.l][newPosition.c] === OBSTACLE) {
+      this.turnRight();
+      newPosition = this.getNextPosition();
+    }
+
+    this.l = newPosition.l;
+    this.c = newPosition.c;
+    this.log.set(JSON.stringify({ l: this.l, c: this.c, d: this.d }));
+
+    visual.renderGuardAt(newPosition, this.d);
+    this.steps++;
+
+    if (matrix[this.l][this.c] !== 'X') {
+      matrix[this.l][this.c] = 'X';
+      visual.drawPathAt(newPosition);
+    }
+    debugger;
+    return { outOfBounds: false };
+  }
+
+  getNextPosition() {
+    const vector = DIRECTIONS[this.d];
+    return { l: this.l + vector[0], c: this.c + vector[1] };
+  }
+
+  turnRight() {
+    switch (this.d) {
+      case '^':
+        this.d = '>';
+        break;
+      case '>':
+        this.d = 'v';
+        break;
+      case 'v':
+        this.d = '<';
+        break;
+      case '<':
+        this.d = '^';
+        break;
+      default:
+        throw Error('wft direction is this', direction);
+    }
+  }
 }
+
+class Visualizer {
+  map; // HtmlElement
+  guard; // HtmlElement
+
+  constructor() {
+    this.map = document.getElementById('map');
+    this.map.innerHTML = '';
+
+    this.guard = document.createElement('div');
+    this.guard.id = 'guard';
+    this.map.appendChild(this.guard);
+  }
+
+  renderMap(matrix) {
+    this.map.innerHTML = '';
+    for (let l = 0; l < matrix.length; l++) {
+      const row = document.createElement('div');
+      for (let c = 0; c < matrix[l].length; c++) {
+        const cell = matrix[l][c];
+        const element = document.createElement('div');
+        element.className = 'cell';
+        element.innerHTML = cell;
+        row.appendChild(element);
+      }
+      this.map.appendChild(row);
+    }
+  }
+
+  renderGuardAt(position, direction) {
+    this.guard.innerHTML = direction;
+    this.guard.style.left = `${position.c * 30}px`;
+    this.guard.style.top = `${position.l * 30}px`;
+  }
+
+  drawPathAt(position) {
+    const path = document.createElement('div');
+    path.className = 'path';
+    path.innerHTML = 'x';
+    path.style.left = `${position.c * 30}px`;
+    path.style.top = `${position.l * 30}px`;
+    this.map.appendChild(path);
+  }
+
+  drawIntersection(position) {
+    const path = document.createElement('div');
+    path.className = 'path intersection';
+    path.innerHTML = '🔴';
+    path.style.left = `${position.c * 30}px`;
+    path.style.top = `${position.l * 30}px`;
+    this.map.appendChild(path);
+  }
+}
+
+const visual = new Visualizer();
 
 function getAnswer() {
   result.textContent = 'Calculating...';
 
   const text = input.value;
-  const matrix = text.split('\n');
+  const matrix = text.split('\n').map((row) => row.split(''));
   console.log(matrix);
 
-  renderMap(matrix);
+  visual.renderMap(matrix);
 
-  const position = {};
-  for (let l = 0; l < matrix.length; l++) {
-    for (let c = 0; c < matrix[l].length; c++) {
-      const char = matrix[l][c];
-      if (isGuard(char)) {
-        console.log(`found guard at [${l}, ${c}]`);
-        position.l = l;
-        position.c = c;
-        position.d = char;
-        break;
-      }
-    }
-    if (position.l != undefined) {
-      break;
-    }
-  }
+  const position = findPosition(matrix, isGuard);
+  visual.renderGuardAt(position);
+  matrix[position.l][position.c] = 'X';
+  visual.drawPathAt(position);
 
-  let count = 0;
-  let done = false;
-  while (!done) {
-    const { increment, outOfBounds, newPosition, direction } =
-      moveGuardInDirection(matrix, position.d, position.l, position.c);
+  const guard = new Guard(position);
+
+  while (true) {
+    visual.drawPathAt(position);
+    const { outOfBounds } = guard.move(matrix);
     if (outOfBounds) {
       break;
     }
-    done = outOfBounds;
-    position.l = newPosition.l;
-    position.c = newPosition.c;
-    position.d = direction;
-    count += increment;
   }
 
-  result.textContent = count;
+  let countX = 0;
+  for (let l = 0; l < matrix.length; l++) {
+    for (let c = 0; c < matrix[l].length; c++) {
+      const char = matrix[l][c];
+      if (char === 'X') {
+        countX++;
+      }
+    }
+  }
+
+  result.textContent = countX;
   return text;
 }

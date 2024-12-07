@@ -19,7 +19,8 @@
       #map > div {
         display: flex;
       }
-      #guard {
+      #guard,
+      .path {
         position: absolute;
         width: 30px;
         height: 30px;
@@ -27,6 +28,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
+      }
+      .path {
+        color: yellow;
+      }
+      .intersection {
+        color: red;
       }
       .cell {
         box-sizing: border-box;
