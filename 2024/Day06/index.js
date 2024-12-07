@@ -13,6 +13,21 @@ const DIRECTIONS = {
 
 const OBSTACLE = '#';
 
+function emoji(char) {
+  switch (char) {
+    case '^':
+      return '⬆️';
+    case '>':
+      return '➡️';
+    case 'v':
+      return '⬇️';
+    case '<':
+      return '⬅️';
+    default:
+      return char;
+  }
+}
+
 function checkOutOfBounds(matrix, position) {
   if (
     position.c < 0 ||
@@ -75,20 +90,27 @@ class Guard {
     if (matrix[newPosition.l][newPosition.c] === OBSTACLE) {
       this.turnRight();
       newPosition = this.getNextPosition();
+      if (matrix[newPosition.l][newPosition.c] === OBSTACLE) {
+        //might need to do a 180
+        this.turnRight();
+        newPosition = this.getNextPosition();
+      }
     }
 
     this.l = newPosition.l;
     this.c = newPosition.c;
     this.log.set(JSON.stringify({ l: this.l, c: this.c, d: this.d }));
 
-    // visual.renderGuardAt(newPosition, this.d);
+    visual.renderGuardAt(newPosition, this.d);
     this.steps++;
 
     if (matrix[this.l][this.c] !== 'X') {
       // matrix[this.l][this.c] = 'X';
-      // visual.drawPathAt(newPosition);
+      visual.drawPathAt(newPosition);
     }
-    // debugger;
+    if (visual.enabled) {
+      debugger;
+    }
     return { outOfBounds: false };
   }
 
@@ -118,55 +140,61 @@ class Guard {
 }
 
 class Visualizer {
-  map; // HtmlElement
-  guard; // HtmlElement
-
   constructor() {
+    this.enabled = true;
     this.map = document.getElementById('map');
     this.map.innerHTML = '';
-
-    this.guard = document.createElement('div');
-    this.guard.id = 'guard';
-    this.map.appendChild(this.guard);
   }
 
   renderMap(matrix) {
-    this.map.innerHTML = '';
-    for (let l = 0; l < matrix.length; l++) {
-      const row = document.createElement('div');
-      for (let c = 0; c < matrix[l].length; c++) {
-        const cell = matrix[l][c];
-        const element = document.createElement('div');
-        element.className = 'cell';
-        element.innerHTML = cell;
-        row.appendChild(element);
+    if (this.enabled) {
+      this.map.innerHTML = '';
+      this.guard = document.createElement('div');
+      this.guard.id = 'guard';
+      this.map.appendChild(this.guard);
+
+      for (let l = 0; l < matrix.length; l++) {
+        const row = document.createElement('div');
+        for (let c = 0; c < matrix[l].length; c++) {
+          const cell = matrix[l][c];
+          const element = document.createElement('div');
+          element.className = 'cell';
+          element.innerHTML = cell;
+          row.appendChild(element);
+        }
+        this.map.appendChild(row);
       }
-      this.map.appendChild(row);
     }
   }
 
   renderGuardAt(position, direction) {
-    this.guard.innerHTML = direction;
-    this.guard.style.left = `${position.c * 30}px`;
-    this.guard.style.top = `${position.l * 30}px`;
+    if (this.enabled) {
+      this.guard.innerHTML = emoji(direction);
+      this.guard.style.left = `${position.c * 30}px`;
+      this.guard.style.top = `${position.l * 30}px`;
+    }
   }
 
   drawPathAt(position) {
-    const path = document.createElement('div');
-    path.className = 'path';
-    path.innerHTML = 'x';
-    path.style.left = `${position.c * 30}px`;
-    path.style.top = `${position.l * 30}px`;
-    this.map.appendChild(path);
+    if (this.enabled) {
+      const path = document.createElement('div');
+      path.className = 'path';
+      path.innerHTML = 'x';
+      path.style.left = `${position.c * 30}px`;
+      path.style.top = `${position.l * 30}px`;
+      this.map.appendChild(path);
+    }
   }
 
   drawIntersection(position) {
-    const path = document.createElement('div');
-    path.className = 'path intersection';
-    path.innerHTML = '🔴';
-    path.style.left = `${position.c * 30}px`;
-    path.style.top = `${position.l * 30}px`;
-    this.map.appendChild(path);
+    if (this.enabled) {
+      const path = document.createElement('div');
+      path.className = 'path intersection';
+      path.innerHTML = '🔴';
+      path.style.left = `${position.c * 30}px`;
+      path.style.top = `${position.l * 30}px`;
+      this.map.appendChild(path);
+    }
   }
 }
 
@@ -216,12 +244,15 @@ function getAnswer() {
   const text = input.value;
   const matrix = text.split('\n').map((row) => row.split(''));
 
-  // visual.renderMap(matrix);
+  visual.renderMap(matrix);
+  if (matrix.length > 20) {
+    visual.enabled = false;
+  }
 
   const position = findPosition(matrix, isGuard);
-  // visual.renderGuardAt(position);
+  visual.renderGuardAt(position);
   matrix[position.l][position.c] = 'X';
-  // visual.drawPathAt(position);
+  visual.drawPathAt(position);
 
   const guard = new Guard(position);
 
@@ -233,7 +264,7 @@ function getAnswer() {
       const cell = matrix[l][c];
       if (cell === '.') {
         matrix[l][c] = '#';
-        // visual.renderMap(matrix);
+        visual.renderMap(matrix);
         while (true) {
           const { outOfBounds } = guard.move(matrix);
           if (outOfBounds) {
@@ -252,6 +283,6 @@ function getAnswer() {
   }
 
   result.textContent = obstacles;
-  console.log(obstacles)
+  console.log(obstacles);
   return text;
 }
