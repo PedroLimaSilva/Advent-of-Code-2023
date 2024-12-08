@@ -5,8 +5,9 @@ const result = document.getElementById('result');
 submitButton.addEventListener('click', getAnswer);
 
 const OPERATORS = {
-  '*': (a, b) => a * b,
-  '+': (a, b) => a + b,
+  '*': (a, b) => +a * +b,
+  '+': (a, b) => +a + +b,
+  '||': (a, b) => a + '' + b,
 };
 
 function generateOperatorCombos(nArgs) {
@@ -29,10 +30,10 @@ function generateOperatorCombos(nArgs) {
 }
 
 function applyCombo(args, operators) {
-  console.log(args, operators);
+  // console.log(args, operators);
   return operators.reduce((acc, operator, i) => {
-    return OPERATORS[operator](acc, +args[i + 1]);
-  }, +args[0]);
+    return OPERATORS[operator](acc, args[i + 1]);
+  }, args[0]);
 }
 
 function isPossible(res, args) {
@@ -40,8 +41,8 @@ function isPossible(res, args) {
   for (let i = 0; i < combos.length; i++) {
     const combo = combos[i];
     const comboResult = applyCombo(args, combo);
-    console.log(comboResult);
-    if (comboResult === +res) {
+    // console.log(comboResult);
+    if (+comboResult === +res) {
       return combo;
     }
   }
@@ -56,13 +57,13 @@ function getAnswer() {
 
   equations.forEach(([res, args]) => {
     args = args.split(' ');
-    console.log({ res, args });
+    // console.log({ res, args });
     if (isPossible(res, args)) {
       answer += +res;
     }
   });
 
   result.textContent = answer;
-  console.log(answer);
+  // console.log(answer);
   return answer;
 }
