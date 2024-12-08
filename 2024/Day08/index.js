@@ -92,12 +92,16 @@ function getAnswer() {
       antennas
         .filter((_, j) => i !== j)
         .forEach((other) => {
-          const x = 2 * antenna[0] - other[0];
-          const y = 2 * antenna[1] - other[1];
-          if (checkOutOfBounds(matrix, { c: x, l: y })) {
-            return;
+          let resonance = 1;
+          while (true) {
+            const x = (1 - resonance) * antenna[0] + resonance * other[0];
+            const y = (1 - resonance) * antenna[1] + resonance * other[1];
+            if (checkOutOfBounds(matrix, { c: x, l: y })) {
+              return;
+            }
+            antinodes.add(`${x},${y}`);
+            resonance++;
           }
-          antinodes.add(`${x},${y}`);
         });
     });
   });
