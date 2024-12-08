@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Day 7</title>
+    <link rel="stylesheet" href="/advent.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      main,
+      header {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1 class="title-global"><a href="/">Advent of Code</a></h1>
+      <h1 class="title-event">
+        &nbsp;&nbsp;&nbsp;<span class="title-event-wrap">$year=</span
+        ><a href="/2024">2024</a><span class="title-event-wrap">;</span>
+      </h1>
+      <h1 class="title-event">
+        &nbsp;&nbsp;&nbsp;<span class="title-event-wrap">$day=</span
+        ><a href="./">7</a><span class="title-event-wrap">;</span>
+      </h1>
+    </header>
+    <main>
+      <label for="input">Input your test here</label>
+
+      <textarea id="input" rows="6">
+190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20</textarea>
+      <button type="button" id="submit">Calculate</button>
+
+      <label for="result">Result</label>
+      <code id="result"></code>
+    </main>
+    <script src="./index.js"></script>
+  </body>
+</html>
