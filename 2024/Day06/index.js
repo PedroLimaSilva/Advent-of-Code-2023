@@ -33,7 +33,7 @@ function checkOutOfBounds(matrix, position) {
     position.c < 0 ||
     position.l < 0 ||
     position.l >= matrix.length ||
-    position.c > matrix[position.l].length
+    position.c >= matrix[position.l].length
   ) {
     // Out of bounds check
     return true;
